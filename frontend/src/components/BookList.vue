@@ -28,3 +28,41 @@
   };
   </script>
   
+  // BookList.vue (Example error handling in a method)
+methods: {
+    async fetchBooks() {
+        try {
+            const response = await axios.get('/api/books');
+            this.books = response.data;
+        } catch (error) {
+            this.errorMessage = 'Failed to load books. Please try again later.';
+        }
+    }
+}
+
+<!-- BookList.vue (Add this inside your template) -->
+<div v-if="errorMessage" class="error">
+  {{ errorMessage }}
+</div>
+
+// AddBook.vue
+methods: {
+    validateForm() {
+        if (!this.title || !this.author) {
+            this.errorMessage = 'Title and author are required.';
+            return false;
+        }
+        return true;
+    },
+    async submitForm() {
+        if (this.validateForm()) {
+            // Proceed with form submission
+        }
+    }
+}
+
+<!-- AddBook.vue (inside your form template) -->
+<div v-if="errorMessage" class="error">
+  {{ errorMessage }}
+</div>
+

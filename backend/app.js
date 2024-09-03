@@ -103,3 +103,51 @@ app.listen(3000, () => {
     console.log('Server is running on port 3000');
 });
 
+// app.js (Add at the end, before app.listen)
+
+// Global error-handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);  // Logs the error stack to the console
+    res.status(500).json({ message: 'Internal Server Error' });
+});
+
+// Example in a route
+app.post('/books', async (req, res, next) => {
+    try {
+        const book = new Book({
+            title: req.body.title,
+            author: req.body.author,
+            review: req.body.review
+        });
+        const newBook = await book.save();
+        res.status(201).json(newBook);
+    } catch (err) {
+        next(err); // Passes the error to the global error-handling middleware
+    }
+});
+
+const { check, validationResult } = require('express-validator');
+
+// Validation example in a POST route
+app.post(
+    '/books',
+    [
+        check('title').not().isEmpty().withMessage('Title is required'),
+        check('author').not().isEmpty().withMessage('Author is required'),
+        check('review').optional().isString().withMessage('Review must be a string')
+    ],
+    async (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        try {
+            const book = new Book(req.body);
+            const newBook = await book.save();
+            res.status(201).json(newBook);
+        } catch (err) {
+            next(err);
+        }
+    }
+);
