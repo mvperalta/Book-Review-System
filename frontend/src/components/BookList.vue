@@ -66,3 +66,6 @@ methods: {
   {{ errorMessage }}
 </div>
 
+<!-- BookList.vue -->
+<v-progress-circular v-if="loading" indeterminate></v-progress-circular>
+
