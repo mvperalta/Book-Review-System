@@ -1,8 +1,10 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const Book = require('./models/book');
+const cors = require('cors');
 
 const app = express();
+app.use(cors());  
 app.use(express.json());
 
 mongoose.connect('mongodb://localhost:27017/book_catalog', {

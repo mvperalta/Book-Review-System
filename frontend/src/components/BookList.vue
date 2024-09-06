@@ -1,71 +1,46 @@
 <template>
-    <div>
-      <h1>Book List</h1>
-      <ul>
-        <li v-for="book in books" :key="book._id">{{ book.title }} by {{ book.author }}</li>
-      </ul>
-    </div>
-  </template>
-  
-  <script>
-  import axios from 'axios';
-  
-  export default {
-    data() {
-      return {
-        books: []
-      };
-    },
-    mounted() {
-      axios.get('http://localhost:3000/books')
-        .then(response => {
-          this.books = response.data;
-        })
-        .catch(error => {
-          console.error('There was an error fetching the books!', error);
-        });
-    }
-  };
-  </script>
-  
-  // BookList.vue (Example error handling in a method)
-methods: {
+  <div>
+    <h1>Book List</h1>
+    <v-progress-circular v-if="loading" indeterminate></v-progress-circular> <!-- Loading spinner -->
+    <div v-if="errorMessage" class="error">{{ errorMessage }}</div> <!-- Error message -->
+    <ul v-if="!loading && !errorMessage"> <!-- Conditionally render book list -->
+      <li v-for="book in books" :key="book._id">{{ book.title }} by {{ book.author }}</li>
+    </ul>
+  </div>
+</template>
+
+<script>
+import axios from 'axios';
+
+export default {
+  data() {
+    return {
+      books: [],
+      errorMessage: '',
+      loading: true, // Add loading state
+    };
+  },
+  methods: {
     async fetchBooks() {
-        try {
-            const response = await axios.get('/api/books');
-            this.books = response.data;
-        } catch (error) {
-            this.errorMessage = 'Failed to load books. Please try again later.';
-        }
-    }
-}
-
-<!-- BookList.vue (Add this inside your template) -->
-<div v-if="errorMessage" class="error">
-  {{ errorMessage }}
-</div>
-
-// AddBook.vue
-methods: {
-    validateForm() {
-        if (!this.title || !this.author) {
-            this.errorMessage = 'Title and author are required.';
-            return false;
-        }
-        return true;
+      try {
+        const response = await axios.get('http://localhost:3000/books');
+        this.books = response.data;
+        this.loading = false;
+      } catch (error) {
+        this.errorMessage = 'Failed to load books. Please try again later.';
+        this.loading = false;
+      }
     },
-    async submitForm() {
-        if (this.validateForm()) {
-            // Proceed with form submission
-        }
-    }
+  },
+  mounted() {
+    this.fetchBooks();
+  },
+};
+</script>
+
+<style>
+/* Basic error message styling */
+.error {
+  color: red;
 }
-
-<!-- AddBook.vue (inside your form template) -->
-<div v-if="errorMessage" class="error">
-  {{ errorMessage }}
-</div>
-
-<!-- BookList.vue -->
-<v-progress-circular v-if="loading" indeterminate></v-progress-circular>
-
+</style>
