@@ -17,7 +17,7 @@
 
     <!-- Local Books -->
     <ul v-if="!loading && !errorMessage && bookSource === 'Local Books'">
-      <li v-for="book in books" :key="book._id">{{ book.title }} by {{ book.author }}</li>
+      <li v-for="book in books" :key="book._id">{{ book.title }} by {{ book.author }} - {{ book.review }}</li>
     </ul>
 
     <!-- NY Times Best Sellers -->
