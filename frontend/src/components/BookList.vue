@@ -9,6 +9,16 @@
       label="Select Book Source"
     ></v-select>
 
+    <!-- Search bar to filter books -->
+    <v-text-field
+      v-model="searchQuery"
+      label="Search for a book"
+      placeholder="Type to search..."
+      clearable
+    ></v-text-field>
+
+
+
     <!-- Loading spinner -->
     <v-progress-circular v-if="loading" indeterminate></v-progress-circular>
 
@@ -17,12 +27,12 @@
 
     <!-- Local Books -->
     <ul v-if="!loading && !errorMessage && bookSource === 'Local Books'">
-      <li v-for="book in books" :key="book._id">{{ book.title }} by {{ book.author }} - {{ book.review }}</li>
+      <li v-for="book in filteredLocalBooks" :key="book._id">{{ book.title }} by {{ book.author }} - {{ book.review }}</li>
     </ul>
 
     <!-- NY Times Best Sellers -->
     <ul v-if="!loading && !errorMessage && bookSource === 'NY Times Best Sellers'">
-      <li v-for="book in bestSellers" :key="book.title">
+      <li v-for="book in filteredBestSellers" :key="book.title">
         <h3>{{ book.title }} by {{ book.author }}</h3>
         <p>Rank: {{ book.rank }}</p>
         <p>Description: {{ book.description }}</p>
@@ -50,8 +60,38 @@ export default {
       errorMessage: '',   // Error message for API failures
       loading: false,     // Loading state
       bookSource: 'Local Books', // Default to local books
+      searchQuery: '', // Search input
     };
   },
+
+
+  computed: {
+    // Filter local books based on search input
+    filteredLocalBooks() {
+      if (!this.searchQuery) return this.books; // If search is empty, return all books
+      return this.books.filter((book) =>
+        book.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        book.author.toLowerCase().includes(this.searchQuery.toLowerCase()) // Include author in search
+      );
+    },
+
+  // Filter NY Times best sellers based on search input
+  filteredBestSellers() {
+    if (!this.searchQuery) return this.bestSellers; // Show all if no query
+
+    return this.bestSellers.filter(book =>
+      book.title.toLowerCase().trim().includes(this.searchQuery.toLowerCase().trim()) ||
+      book.author.toLowerCase().includes(this.searchQuery.toLowerCase()) // Include author in search
+    );
+  },
+},
+
+
+
+
+
+
+
   watch: {
     // Watch the bookSource and fetch the appropriate books when changed
     bookSource(newSource) {
