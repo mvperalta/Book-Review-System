@@ -17,8 +17,6 @@
       clearable
     ></v-text-field>
 
-
-
     <!-- Loading spinner -->
     <v-progress-circular v-if="loading" indeterminate></v-progress-circular>
 
@@ -27,15 +25,27 @@
 
     <!-- Local Books -->
     <ul v-if="!loading && !errorMessage && bookSource === 'Local Books'">
-      <li v-for="book in filteredLocalBooks" :key="book._id">{{ book.title }} by {{ book.author }} - {{ book.review }}</li>
+      <li v-for="book in paginatedLocalBooks" :key="book._id">{{ book.title }} by {{ book.author }} - {{ book.review }}</li>
     </ul>
+
+
+  <!-- Pagination Controls for Local Books -->
+<div v-if="bookSource === 'Local Books' && totalPagesLocal > 1" class="pagination">
+  <button @click="currentPage--" :disabled="currentPage === 1">Previous</button>
+  <span>Page {{ currentPage }} of {{ totalPagesLocal }}</span>
+  <button @click="currentPage++" :disabled="currentPage >= totalPagesLocal">Next</button>
+</div>
+
+
+
 
     <!-- NY Times Best Sellers -->
     <ul v-if="!loading && !errorMessage && bookSource === 'NY Times Best Sellers'">
-      <li v-for="book in filteredBestSellers" :key="book.title">
+      <li v-for="book in paginatedBestSellers" :key="book.title">
         <h3>{{ book.title }} by {{ book.author }}</h3>
         <p>Rank: {{ book.rank }}</p>
         <p>Description: {{ book.description }}</p>
+
 
         <!-- Only show 'Reviews' section if reviews exist -->
         <p v-if="book.reviews && book.reviews.length > 0">Reviews:</p>
@@ -46,6 +56,17 @@
         </ul>
       </li>
     </ul>
+
+    <!-- Pagination Controls for NY Times Best Sellers -->
+<div v-if="bookSource === 'NY Times Best Sellers' && totalPagesBestSellers > 1" class="pagination">
+  <button @click="currentPage--" :disabled="currentPage === 1">Previous</button>
+  <span>Page {{ currentPage }} of {{ totalPagesBestSellers }}</span>
+  <button @click="currentPage++" :disabled="currentPage >= totalPagesBestSellers">Next</button>
+</div>
+
+
+
+
   </div>
 </template>
 
@@ -61,9 +82,12 @@ export default {
       loading: false,     // Loading state
       bookSource: 'Local Books', // Default to local books
       searchQuery: '', // Search input
+
+      // Pagination state
+      currentPage: 1,
+      pageSize: 5, // Books per page
     };
   },
-
 
   computed: {
     // Filter local books based on search input
@@ -84,6 +108,33 @@ export default {
       book.author.toLowerCase().includes(this.searchQuery.toLowerCase()) // Include author in search
     );
   },
+
+
+
+
+
+  //Paginated local books
+  paginatedLocalBooks() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredLocalBooks.slice(start, start + this.pageSize);
+
+  },
+
+  // Paginated NYT books
+  paginatedBestSellers() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredBestSellers.slice(start, start + this.pageSize);
+  },
+
+  // Calculate total pages for local books
+  totalPagesLocal() {
+  return Math.ceil(this.filteredLocalBooks.length / this.pageSize);
+},
+
+  // Calculate total pages for NYT books
+  totalPagesBestSellers() {
+  return Math.ceil(this.filteredBestSellers.length / this.pageSize);
+}
 },
 
 
@@ -91,17 +142,21 @@ export default {
 
 
 
-
+  // Watch the bookSource and fetch the appropriate books when changed
   watch: {
-    // Watch the bookSource and fetch the appropriate books when changed
-    bookSource(newSource) {
-      if (newSource === 'Local Books') {
-        this.fetchLocalBooks();
-      } else if (newSource === 'NY Times Best Sellers') {
-        this.fetchBestSellers();
-      }
-    },
+    searchQuery() {
+    this.currentPage = 1; // Reset to first page when searching
   },
+  bookSource(newSource) {
+    if (newSource === 'Local Books') {
+      this.fetchLocalBooks();
+    } else if (newSource === 'NY Times Best Sellers') {
+      this.fetchBestSellers();
+    }
+    this.currentPage = 1; // Reset to first page when switching sources
+  }
+    },
+
   methods: {
     // Fetch local books from your backend API
     async fetchLocalBooks() {
@@ -170,6 +225,16 @@ export default {
 </script>
 
 <style>
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px; /* Adds spacing between elements */
+  margin-top: 10px;
+}
+
+
 .error {
   color: red;
 }
