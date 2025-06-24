@@ -7,27 +7,20 @@
     <NavigationDrawer :drawer="drawer" @update:drawer="drawer = $event" />
 
     <v-main>
-      <v-container class="py-6">
-        <BookList ref="bookList" />
-        <AddBook @book-added="reloadBooks" />
-      </v-container>
-    </v-main>
+  <router-view />
+</v-main>
   </v-app>
 </template>
 
 <script>
 import AppBar from './layout/AppBar.vue'
 import NavigationDrawer from './layout/NavigationDrawer.vue'
-import BookList from './components/BookList.vue'
-import AddBook from './components/AddBook.vue'
 
 export default {
   name: 'App',
   components: {
     AppBar,
-    NavigationDrawer,
-    BookList,
-    AddBook
+    NavigationDrawer
   },
   data() {
     return {
@@ -35,12 +28,10 @@ export default {
     }
   },
   methods: {
-    reloadBooks() {
-      this.$refs.bookList.fetchLocalBooks()
-    },
     toggleDrawer() {
       this.drawer = !this.drawer
     }
   }
 }
 </script>
+
